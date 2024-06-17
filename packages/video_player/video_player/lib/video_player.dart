@@ -391,6 +391,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Completer<void>? _creatingCompleter;
   StreamSubscription<dynamic>? _eventSubscription;
   _VideoAppLifeCycleObserver? _lifeCycleObserver;
+  _AppLifeCycleObserver? __applifeCycleObserver;
 
   /// The id of a texture that hasn't been initialized.
   @visibleForTesting
@@ -409,6 +410,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!allowBackgroundPlayback) {
       _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
     }
+    __applifeCycleObserver = _AppLifeCycleObserver(this);
+    __applifeCycleObserver?.initialize();
     _lifeCycleObserver?.initialize();
     _creatingCompleter = Completer<void>();
 
@@ -532,6 +535,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         await _videoPlayerPlatform.dispose(_textureId);
       }
       _lifeCycleObserver?.dispose();
+      __applifeCycleObserver?.dispose();
     }
     _isDisposed = true;
     super.dispose();
@@ -846,6 +850,28 @@ class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
       if (_wasPlayingBeforePause) {
         _controller.play();
       }
+    }
+  }
+
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+  }
+}
+
+class _AppLifeCycleObserver extends Object with WidgetsBindingObserver {
+  _AppLifeCycleObserver(this._controller);
+
+  final VideoPlayerController _controller;
+
+  void initialize() {
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _controller.value =
+          _controller.value.copyWith(isPictureInPictureActive: true);
     }
   }
 
