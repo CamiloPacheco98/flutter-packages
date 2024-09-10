@@ -843,14 +843,14 @@ class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _wasPlayingBeforePause = _controller.value.isPlaying;
-      _controller.pause();
-    } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        _controller.play();
-      }
-    }
+    // if (state == AppLifecycleState.paused) {
+    //   _wasPlayingBeforePause = _controller.value.isPlaying;
+    //   _controller.pause();
+    // } else if (state == AppLifecycleState.resumed) {
+    //   if (_wasPlayingBeforePause) {
+    //     _controller.play();
+    //   }
+    // }
   }
 
   void dispose() {
@@ -869,10 +869,10 @@ class _AppLifeCycleObserver extends Object with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _controller.value =
-          _controller.value.copyWith(isPictureInPictureActive: true);
-    }
+    // if (state == AppLifecycleState.paused) {
+    //   _controller.value =
+    //       _controller.value.copyWith(isPictureInPictureActive: true);
+    // }
   }
 
   void dispose() {
