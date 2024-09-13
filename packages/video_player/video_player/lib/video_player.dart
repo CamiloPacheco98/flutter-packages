@@ -390,8 +390,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   bool _isDisposed = false;
   Completer<void>? _creatingCompleter;
   StreamSubscription<dynamic>? _eventSubscription;
-  _VideoAppLifeCycleObserver? _lifeCycleObserver;
-  _AppLifeCycleObserver? __applifeCycleObserver;
 
   /// The id of a texture that hasn't been initialized.
   @visibleForTesting
@@ -408,11 +406,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     final bool allowBackgroundPlayback =
         videoPlayerOptions?.allowBackgroundPlayback ?? false;
     if (!allowBackgroundPlayback) {
-      _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
     }
-    __applifeCycleObserver = _AppLifeCycleObserver(this);
-    __applifeCycleObserver?.initialize();
-    _lifeCycleObserver?.initialize();
     _creatingCompleter = Completer<void>();
 
     late DataSource dataSourceDescription;
@@ -534,8 +528,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         await _eventSubscription?.cancel();
         await _videoPlayerPlatform.dispose(_textureId);
       }
-      _lifeCycleObserver?.dispose();
-      __applifeCycleObserver?.dispose();
     }
     _isDisposed = true;
     super.dispose();
@@ -829,57 +821,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
-}
-
-class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {
-  _VideoAppLifeCycleObserver(this._controller);
-
-  bool _wasPlayingBeforePause = false;
-  final VideoPlayerController _controller;
-
-  void initialize() {
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    _controller.play();
-    // if (state == AppLifecycleState.paused) {
-    //   _wasPlayingBeforePause = _controller.value.isPlaying;
-    //   _controller.pause();
-    // } else if (state == AppLifecycleState.resumed) {
-    //   if (_wasPlayingBeforePause) {
-    //     _controller.play();
-    //   }
-    // }
-  }
-
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-  }
-}
-
-class _AppLifeCycleObserver extends Object with WidgetsBindingObserver {
-  _AppLifeCycleObserver(this._controller);
-
-  final VideoPlayerController _controller;
-
-  void initialize() {
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    _controller.play();
-    // if (state == AppLifecycleState.paused) {
-    //   _controller.value =
-    //       _controller.value.copyWith(isPictureInPictureActive: true);
-    // }
-  }
-
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-  }
 }
 
 /// Widget that displays the video controlled by [controller].
